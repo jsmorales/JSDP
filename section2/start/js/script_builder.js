@@ -102,8 +102,7 @@
 			//proceso de poscicionamiento de la capa
 			//necesita la capa, la posicion en x y en y
 			function _position(circle, left, top){
-				circle.css('left',left);
-				circle.css('top',top);
+				circle.move(left, top);
 			}
 
 			//proceso de creacion, solo crea la capa y la retorna
@@ -111,13 +110,13 @@
 				//var circle = $('<div class="circle"></div>'); sin cf
 				//con cf
 				var circle = _cf.create(type).get();
-				_position(circle, left, top);
+				circle.move(left, top);				
 				return circle;	
 			}
 
 			//proceso de adicion del elemento
 			function add(circle){
-				_stage.append(circle)
+				_stage.append(circle.get())
 				//se llena este array para tener una refencia de los 
 				//circulos creados.
 				_aCircle.push(circle)
