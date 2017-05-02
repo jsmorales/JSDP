@@ -48,6 +48,21 @@
 	}
 	//se conan los metodos de la clase cirlce en rect
 	clone(Circle, Rect);
+
+	//-----------------------------------------------
+	//decorator
+	function selfDestructDecorator(objt){
+		//se añade el evento click para autodestruir en esta accion
+		objt.item.click(function(event) {
+			objt.kill()
+		});
+		//añade al objeto que se le pase la funcion kill
+		objt.kill = function(){
+			objt.item.remove()
+		}
+	}
+	//-----------------------------------------------
+
 	//-----------------------------------------------
 	//Builder circulo rojo
 	function RedCircleBuilder(){
@@ -78,6 +93,8 @@
 		var rect = new Rect();
 		rect.color("yellow");
 		rect.move(40,40);
+
+		selfDestructDecorator(rect)
 
 		this.item.get().append(rect.get())
 		//---------------------------------------
@@ -137,6 +154,29 @@
 		this.context.remove('.'+this.SIG.index);
 	}
 	//----------------------------------------------------------------
+	//el controlador composite nos va a permitir trabajar con varios
+	//elementos al mismo tiempo.
+	function CompositeController(a){
+		//array de los elementos a manejar
+		this.a = a;
+	}
+
+	//funciones en prototype------------------------------------------
+	//esta funcion pretende identificar la accion se quiere ejecutar 
+	//para la lista de elementos
+	CompositeController.prototype.action = function(act){
+		//para poder trabajar os argumentos se crea un array
+		var args = Array.prototype.slice.call(arguments);
+			args.shift();
+
+		//se recorren los elementos para validar la accion a ejecutar
+		for (var item in this.a) {
+			//para cada item del array se ejecuta la accion
+			//que se parametrizo
+			this.a[item][act].apply(this.a[item], args);
+		}
+	}
+	//----------------------------------------------------------------
 
 	var CircleGeneratorSingleton = (function(){
 		//crear un inicializador para que solo se
@@ -150,7 +190,8 @@
 			//variables del metodo
 			var _aCircle = [],//array que almacena los circulos
 				_stage,//en donde va a ocurrir todo
-				_sf = new ShapeFactory();//referencia a la fabrica de formas
+				_sf = new ShapeFactory(),//referencia a la fabrica de formas
+				_cc = new CompositeController(_aCircle);
 									
 			//proceso de poscicionamiento de la capa
 			//necesita la capa, la posicion en x y en y
@@ -178,6 +219,14 @@
 				return circle;	
 			}
 
+			function tint(clr){
+				_cc.action('color', clr);
+			}
+
+			function move(left, top){
+				_cc.action('move', left, top);
+			}
+
 			//proceso de adicion del elemento
 			function add(circle){
 				_stage.add(circle.get())
@@ -200,6 +249,8 @@
 				add:add,
 				register:registerShape,
 				setStage:setStage,
+				tint:tint,
+				move:move,
 			};
 		}
 
@@ -228,7 +279,7 @@
 
 	$(win.document).ready(function(){
 
-		var circleGenerator = CircleGeneratorSingleton.getInstance();
+		self.circleGenerator = CircleGeneratorSingleton.getInstance();
 		//se setea el stage con el adaptador para jquery
 		circleGenerator.setStage(new StageAdapter('.advert'));
 		circleGenerator.register('red', RedCircleBuilder)
@@ -243,6 +294,9 @@
 		});
 
 		$(document).keypress(function(e) {
+
+			console.log(e.key)
+
 			//al presionar a
 			if (e.key == 'a') {
 				var circleGenerator = CircleGeneratorSingleton.getInstance();				
@@ -250,8 +304,43 @@
 													Math.floor(Math.random()*600),
 													"blue")
 				circleGenerator.add(circle);
+			} else if (e.key === 't'){
+
+				var circleGenerator = CircleGeneratorSingleton.getInstance();
+
+				circleGenerator.tint('blue');
+			} else if (e.key === 'e'){
+
+				var circleGenerator = CircleGeneratorSingleton.getInstance();
+
+				circleGenerator.move("+=5px","+=0px");
+			} else if (e.key === 'w'){
+
+				var circleGenerator = CircleGeneratorSingleton.getInstance();
+
+				circleGenerator.move("-=5px","+=0px");
 			}
 		});
+
+		//-------------------------------------------------
+		//prueba apply call bind
+		/**/
+		var persona = {
+			nombre:"Johan",
+			saludar:function(apell1,apell2){
+				console.log("El nombre es "+this.nombre+" "+apell1+" "+apell2)
+			}
+		}
+
+		//en esta variable solo se llama la funcion saludar
+		//la cual queda sin contexto
+		var saluda = persona.saludar;
+			
+		//call define el contexto de la función
+		saluda.call(persona, 'Morales', 'Rodríguez');
+		//saluda('Morales', 'Rodríguez')
+
+		//-------------------------------------------------
 
 	});
 
