@@ -193,7 +193,7 @@
 			}
 
 			function chainTint(count){
-				var index = Math.max(0,_aCircle.length-count),
+				var index = Math.max(0,_aCircle.length - count),
 						clr = "#" + 
 									Math.floor(Math.random()*255).toString(16) + 
 									Math.floor(Math.random()*255).toString(16) + 
