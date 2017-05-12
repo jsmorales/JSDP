@@ -52,6 +52,14 @@
 		return this.item;
 	}
 
+	Circle.prototype.getID = function(){
+		return this.id;
+	}
+
+	Circle.prototype.setID = function(id){
+		this.id = id;
+	}
+
 	self.circ = new Circle();
 
 	//nueva clase rectangulo+++++++++++++++++++++++++
@@ -61,6 +69,34 @@
 	}
 	//se conan los metodos de la clase cirlce en rect
 	clone(Circle, Rect);
+
+	//-----------------------------------------------
+	//el diseño de fachada tiene como finalidad reducir las
+	//interfaces para cada uno de los elementos y hacerlas mas
+	//sencillas a demás de proteger el acceso a metodos privados.
+	//para el patron proxy se usa https://api.jquery.com/jQuery.proxy/
+
+	function binder(scope, fun){
+		//retorna una funcion 
+		return function(){
+			//dentro de la funcion aplica los argumentos como dicha
+			//funcion que se pase.
+			return fun.apply(scope,arguments);
+		}
+	}
+
+
+	function shapeFacade(shp){
+		return {
+			color: function(clr){
+				shp.color(clr);
+			},
+			move: $.proxy(shp.move, shp),		
+			//getID: $.proxy(shp.getID, shp)
+			getID: binder(shp, shp.getID)
+		}
+	}
+	//-----------------------------------------------
 
 	//-----------------------------------------------
 	//decorator
@@ -254,8 +290,15 @@
 				//con cf
 				self.circle = _sf.create(type);
 				circle.move(left, top);
+
+				//se setea el id con la cantidad que halla
+				circle.setID(_aCircle.length)
+
+				//se llena este array para tener una refencia de los 
+				//circulos creados.
+				_aCircle.push(circle)
 							
-				return circle;	
+				return shapeFacade(circle);	
 			}
 
 			function tint(clr){
@@ -268,10 +311,8 @@
 
 			//proceso de adicion del elemento
 			function add(circle){
-				_stage.add(circle.get())
-				//se llena este array para tener una refencia de los 
-				//circulos creados.
-				_aCircle.push(circle)
+				_stage.add(_aCircle[circle.getID()].get())
+				
 			}
 
 			//esta funcion informara en que index del array estamos
@@ -380,7 +421,6 @@
 		//call define el contexto de la función
 		saluda.call(persona, 'Morales', 'Rodríguez');
 		//saluda('Morales', 'Rodríguez')
-
 		//-------------------------------------------------
 
 	});
