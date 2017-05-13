@@ -142,6 +142,69 @@
 	//-----------------------------------------------
 
 	//-----------------------------------------------
+	//JSDP observer
+	function eventDispatcherDecorator(objt){
+
+		var list = {};
+
+		objt.addEvent = function(type, listener){
+
+			if (!list[type]) {
+				list[type] = [];
+			}
+
+			if (list[type].indexOf(listener) === -1) {
+				list[type].push(listener);
+			}
+		}
+
+		objt.removeEvent = function(type, listener){
+			
+			var a = list[type];
+
+			if (a) {
+				var index = a.indexOf(listener);
+
+				if (index>-1) {
+					a.splice(index, 1);					
+				}
+			}
+		}
+
+		objt.dispatchEvent = function(e){
+			var aList = list[e.type];
+			if (aList) {
+				if (!e.target) {
+					e.target = this;
+				}
+				for(var index in aList){
+					aList[index](e);
+				}
+			}
+		}
+	}
+
+	var objt = {};
+	var funct = function(){
+		console.log("it´s over2")
+	}
+
+	eventDispatcherDecorator(objt);
+	
+	objt.addEvent('over', function(){
+		console.log("it´s over")
+	})
+
+	objt.addEvent('over', funct)
+	objt.addEvent('over', funct)
+	objt.addEvent('over', funct)
+
+	objt.removeEvent('over', funct)
+
+	objt.dispatchEvent({type:'over'})
+	//-----------------------------------------------
+
+	//-----------------------------------------------
 	//Builder circulo rojo
 	function RedCircleBuilder(){
 		this.item = new Circle();
